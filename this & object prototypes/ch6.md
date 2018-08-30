@@ -70,13 +70,13 @@ Basically, you think about performing task "XYZ" as needing behaviors from two s
 Here's some simple code to suggest how you accomplish that:
 
 ```js
-Task = {
+var Task = {
 	setID: function(ID) { this.id = ID; },
 	outputID: function() { console.log( this.id ); }
 };
 
 // make `XYZ` delegate to `Task`
-XYZ = Object.create( Task );
+var XYZ = Object.create( Task );
 
 XYZ.prepareTask = function(ID,Label) {
 	this.setID( ID );
@@ -112,13 +112,13 @@ Some other differences to note with **OLOO style code**:
 
 This is an *extremely powerful* design pattern, very distinct from the idea of parent and child classes, inheritance, polymorphism, etc. Rather than organizing the objects in your mind vertically, with Parents flowing down to Children, think of objects side-by-side, as peers, with any direction of delegation links between the objects as necessary.
 
-**Note:** Delegation is more properly used as an internal implementation detail rather than exposed directly in the API interface design. In the above example, we don't necessarily *intend* with our API design for developers to call `XYZ.setID()` (though we can, of course!). We sorta *hide* the delegation as an internal detail of our API, where `XYZ.prepareTask(..)` delegates to `Task.setID(..)`. See the "Links As Fallbacks?" discussion in Chapter 5 for more detail.
+**Note:** Delegation is more properly used as an internal implementation detail rather than exposed directly in the API design. In the above example, we don't necessarily *intend* with our API design for developers to call `XYZ.setID()` (though we can, of course!). We sorta *hide* the delegation as an internal detail of our API, where `XYZ.prepareTask(..)` delegates to `Task.setID(..)`. See the "Links As Fallbacks?" discussion in Chapter 5 for more detail.
 
 #### Mutual Delegation (Disallowed)
 
 You cannot create a *cycle* where two or more objects are mutually delegated (bi-directionally) to each other. If you make `B` linked to `A`, and then try to link `A` to `B`, you will get an error.
 
-It's a shame (not terribly surprising, but mildly annoying) that this is disallowed. If you made a reference to a property/method which didn't exist in either place, you'd have a infinite recursion on the `[[Prototype]]` loop. But if all references were strictly present, then `B` could delegate to `A`, and vice versa, and it *could* work. This would mean you could use either object to delegate to the other, for various tasks. There are a few niche use-cases where this might be helpful.
+It's a shame (not terribly surprising, but mildly annoying) that this is disallowed. If you made a reference to a property/method which didn't exist in either place, you'd have an infinite recursion on the `[[Prototype]]` loop. But if all references were strictly present, then `B` could delegate to `A`, and vice versa, and it *could* work. This would mean you could use either object to delegate to the other, for various tasks. There are a few niche use-cases where this might be helpful.
 
 But it's disallowed because engine implementors have observed that it's more performant to check for (and reject!) the infinite circular reference once at set-time rather than needing to have the performance hit of that guard check every time you look-up a property on an object.
 
@@ -232,7 +232,7 @@ Parent class `Foo`, inherited by child class `Bar`, which is then instantiated t
 Now, let's implement **the exact same functionality** using *OLOO* style code:
 
 ```js
-Foo = {
+var Foo = {
 	init: function(who) {
 		this.me = who;
 	},
@@ -241,7 +241,7 @@ Foo = {
 	}
 };
 
-Bar = Object.create( Foo );
+var Bar = Object.create( Foo );
 
 Bar.speak = function() {
 	alert( "Hello, " + this.identify() + "." );
@@ -382,7 +382,7 @@ class Button extends Widget {
 		this.$elem = $( "<button>" ).text( this.label );
 	}
 	render($where) {
-		super( $where );
+		super.render( $where );
 		this.$elem.click( this.onClick.bind( this ) );
 	}
 	onClick(evt) {
@@ -824,7 +824,7 @@ Because `Foo.prototype` (not `Foo`!) is in the `[[Prototype]]` chain (see Chapte
 
 Of course, there is no `Foo` class, only a plain old normal function `Foo`, which happens to have a reference to an arbitrary object (`Foo.prototype`) that `a1` happens to be delegation-linked to. By its syntax, `instanceof` pretends to be inspecting the relationship between `a1` and `Foo`, but it's actually telling us whether `a1` and (the arbitrary object referenced by) `Foo.prototype` are related.
 
-The semantic confusion (and indirection) of `instanceof` syntax  means that to use `instanceof`-based introspection to ask if object `a1` is related to the capabilities object in question, you *have to* have a function that holds a reference to that object -- you can't just directly ask if the two objects are related.
+The semantic confusion (and indirection) of `instanceof` syntax means that to use `instanceof`-based introspection to ask if object `a1` is related to the capabilities object in question, you *have to* have a function that holds a reference to that object -- you can't just directly ask if the two objects are related.
 
 Recall the abstract `Foo` / `Bar` / `b1` example from earlier in this chapter, which we'll abbreviate here:
 
